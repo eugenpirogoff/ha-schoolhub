@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "latest_message_ids": [
+    {
+      "chat_id": 1,
+      "chat_join_as_member_token": "chat-a",
+      "latest_message_id": 50,
+      "read_messages_up_to_id": 50,
+      "latest_message_datetime": "2026-09-20T08:00:00Z",
+      "message": "Nachricht"
+    },
+    {
+      "chat_id": 2,
+      "chat_join_as_member_token": "chat-b",
+      "latest_message_id": 71,
+      "read_messages_up_to_id": 60,
+      "latest_message_datetime": "2026-09-21T07:00:00Z",
+      "message": "Nachricht"
+    },
+    {
+      "chat_id": 3,
+      "chat_join_as_member_token": "chat-c",
+      "latest_message_id": 30,
+      "read_messages_up_to_id": 10,
+      "latest_message_datetime": "2026-09-01T09:00:00Z",
+      "message": "Nachricht"
+    },
+    {
+      "chat_id": 4,
+      "chat_join_as_member_token": "chat-d",
+      "latest_message_id": 90,
+      "read_messages_up_to_id": null,
+      "latest_message_datetime": "2026-09-21T06:00:00Z",
+      "message": "Nachricht"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "news_posts_total_count": 23,
+  "news_posts": [
+    {
+      "id": 4000,
+      "class": "NewsPost",
+      "news_post_id": 4000,
+      "header": "Klassennachricht 3a 1",
+      "abstract": null,
+      "content": "<p>Liebe Eltern,&nbsp;<br><br>Klassennachricht 3a Text 1.</p>",
+      "visiblefrom": null,
+      "visibleuntil": null,
+      "created_at": "2026-09-22T06:20:33Z",
+      "updated_at": "2026-09-22T06:20:33Z",
+      "ecuser_id": 1,
+      "full_name": "Lehrkraft A.",
+      "image_url": "static/img/swop-listenicon-1.jpg",
+      "isonlylink": false,
+      "linkhref": null,
+      "attachments": []
+    },
+    {
+      "id": 4001,
+      "class": "NewsPost",
+      "news_post_id": 4001,
+      "header": "Klassennachricht 3a 2",
+      "abstract": null,
+      "content": "<p>Liebe Eltern,&nbsp;<br><br>Klassennachricht 3a Text 2.</p>",
+      "visiblefrom": null,
+      "visibleuntil": null,
+      "created_at": "2026-09-14T11:20:29Z",
+      "updated_at": "2026-09-14T11:20:29Z",
+      "ecuser_id": 1,
+      "full_name": "Lehrkraft A.",
+      "image_url": "static/img/swop-listenicon-1.jpg",
+      "isonlylink": false,
+      "linkhref": null,
+      "attachments": []
+    },
+    {
+      "id": 4002,
+      "class": "NewsPost",
+      "news_post_id": 4002,
+      "header": "Klassennachricht 3a 3",
+      "abstract": null,
+      "content": "<p>Liebe Eltern,&nbsp;<br><br>Klassennachricht 3a Text 3.</p>",
+      "visiblefrom": null,
+      "visibleuntil": null,
+      "created_at": "2026-06-30T18:02:45Z",
+      "updated_at": "2026-06-30T18:02:45Z",
+      "ecuser_id": 1,
+      "full_name": "Lehrkraft A.",
+      "image_url": "static/img/swop-listenicon-5.jpg",
+      "isonlylink": false,
+      "linkhref": null,
+      "attachments": []
+    }
+  ]
+}

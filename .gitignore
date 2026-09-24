@@ -1,2 +1,9 @@
 schoolhub/cache
 schoolhub/output
+schoolhub/config.yaml
+__pycache__/
+.claude/settings.local.json
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage

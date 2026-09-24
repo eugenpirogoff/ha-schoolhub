@@ -1,0 +1,171 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add a school service",
+        "description": "Add SchoolHub once per login: once for the SWOP school portal and once for each child's Drei Köche lunch account. Children are matched by name.",
+        "menu_options": {
+          "swop": "SWOP school portal (timetable, homework, news)",
+          "drei_koeche": "Drei Köche (school lunch)"
+        }
+      },
+      "swop": {
+        "title": "SWOP school portal",
+        "description": "Log in with the same account you use on the SWOP website. A parent or family account shows all its children.",
+        "data": {
+          "url": "School address",
+          "username": "Username",
+          "password": "Password"
+        },
+        "data_description": {
+          "url": "Pick your school or enter the address of its SWOP portal, e.g. `https://my-school.swop.schule`. Just `my-school` works too.",
+          "username": "Your SWOP login name, as on the website.",
+          "password": "Your SWOP password."
+        }
+      },
+      "drei_koeche": {
+        "title": "Drei Köche",
+        "description": "Log in with one child's Drei Köche account. Add SchoolHub again for each further child.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        },
+        "data_description": {
+          "username": "The child's Drei Köche login name.",
+          "password": "The child's Drei Köche password."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Log in again",
+        "description": "The password for {username} is no longer accepted. Enter the current password.",
+        "data": {
+          "password": "Password"
+        },
+        "data_description": {
+          "password": "The current password for this login."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "The username or password is wrong.",
+      "cannot_connect": "The service could not be reached. Check the school address and try again.",
+      "no_students": "The login works, but no children were found for it.",
+      "unknown": "Unexpected error. See the log for details.",
+      "invalid_url": "This is not a valid address. Enter e.g. `https://my-school.swop.schule`.",
+      "https_required": "The address must start with `https://` so the password is sent encrypted."
+    },
+    "abort": {
+      "already_configured": "This login is already set up.",
+      "reauth_successful": "Logged in again successfully."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Date range",
+        "description": "Which weeks to fetch, counted from the current week.",
+        "data": {
+          "weeks_past": "Weeks back",
+          "weeks_future": "Weeks ahead"
+        },
+        "data_description": {
+          "weeks_past": "Past weeks to fetch, e.g. for recent homework.",
+          "weeks_future": "Coming weeks to fetch, e.g. for the timetable and lunch."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "new_messages": {
+        "name": "New messages"
+      }
+    },
+    "calendar": {
+      "timetable": {
+        "name": "Timetable"
+      },
+      "meals": {
+        "name": "Lunch"
+      }
+    },
+    "select": {
+      "homework_day": {
+        "name": "Homework day",
+        "state": {
+          "monday": "Monday",
+          "tuesday": "Tuesday",
+          "wednesday": "Wednesday",
+          "thursday": "Thursday",
+          "friday": "Friday"
+        }
+      },
+      "timetable_week": {
+        "name": "Timetable week"
+      }
+    },
+    "sensor": {
+      "next_lesson": {
+        "name": "Next lesson"
+      },
+      "open_homework": {
+        "name": "Open homework"
+      },
+      "class_news": {
+        "name": "Class news"
+      },
+      "school_news": {
+        "name": "School news"
+      },
+      "meal_today": {
+        "name": "Lunch today"
+      }
+    },
+    "todo": {
+      "homework": {
+        "name": "Homework"
+      },
+      "homework_of_day": {
+        "name": "Homework of the day"
+      }
+    }
+  },
+  "exceptions": {
+    "unknown_homework": {
+      "message": "This homework no longer exists in SWOP."
+    },
+    "homework_read_only": {
+      "message": "Homework comes from SWOP and can only be ticked off, not edited."
+    },
+    "auth_failed": {
+      "message": "{service} rejected the login. Log in again."
+    },
+    "update_failed": {
+      "message": "Could not update from {service}: {error}"
+    }
+  },
+  "issues": {
+    "student_not_found": {
+      "title": "No SWOP child found for {name}",
+      "description": "The Drei Köche login \"{entry}\" belongs to **{name}**, but no child with this name was found in SWOP. SWOP knows: {swop_names}.\n\nCheck the spelling of the names at both services. Until they match, the lunch of {name} can't be shown together with a timetable."
+    },
+    "student_similar_name": {
+      "title": "{name} matched to {swop_name} despite different spelling",
+      "description": "The names at Drei Köche (**{name}**) and SWOP (**{swop_name}**) differ slightly ({similarity} similar). SchoolHub assumes it is the same child.\n\nIf that is wrong, fix the name at one of the services. You can ignore this message if the match is right."
+    },
+    "entity_prefix_mismatch": {
+      "title": "Lunch and timetable of {name} have different entity IDs",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Combine lunch and timetable of {swop_name}",
+            "description": "Drei Köche knows this child as **{name}**, SWOP as **{swop_name}**. Only continue if this is the same child.\n\nDashboards find a child's lunch by the beginning of its entity IDs: the lunch uses `{old_prefix}`, the timetable `{new_prefix}`. These entities will be renamed:\n{renames}"
+          }
+        },
+        "abort": {
+          "entity_id_taken": "One of the new entity IDs is already in use. Rename the entities manually under Settings → Entities."
+        }
+      }
+    }
+  }
+}

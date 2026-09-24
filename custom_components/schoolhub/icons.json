@@ -1,0 +1,53 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "new_messages": {
+        "default": "mdi:message-outline",
+        "state": {
+          "on": "mdi:message-badge"
+        }
+      }
+    },
+    "calendar": {
+      "timetable": {
+        "default": "mdi:school"
+      },
+      "meals": {
+        "default": "mdi:silverware-fork-knife"
+      }
+    },
+    "sensor": {
+      "next_lesson": {
+        "default": "mdi:clock-outline"
+      },
+      "open_homework": {
+        "default": "mdi:book-open-variant"
+      },
+      "class_news": {
+        "default": "mdi:newspaper-variant-outline"
+      },
+      "school_news": {
+        "default": "mdi:bullhorn-outline"
+      },
+      "meal_today": {
+        "default": "mdi:food"
+      }
+    },
+    "todo": {
+      "homework": {
+        "default": "mdi:notebook-check-outline"
+      },
+      "homework_of_day": {
+        "default": "mdi:calendar-check-outline"
+      }
+    },
+    "select": {
+      "homework_day": {
+        "default": "mdi:calendar-cursor"
+      },
+      "timetable_week": {
+        "default": "mdi:calendar-week"
+      }
+    }
+  }
+}

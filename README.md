@@ -1,98 +1,208 @@
-# ha-schoolhub
+# SchoolHub for Home Assistant
 
-SchoolHub is a Python 3-based integration for retrieving school-related
-information from **Drei Köche** and **SWOP**. It can be run locally or
-integrated into **Home Assistant**.
+A Home Assistant integration for German school services:
 
-## Requirements
+- **SWOP** school portal (`https://<school>.swop.schule`): timetable, homework,
+  class news and school news
+- **Drei Köche** school catering: ordered lunches
 
--   Python 3
--   Valid login credentials for the supported services
--   For Home Assistant integration: access to Python scripts and
-    automations
+Everything is set up in the Home Assistant UI. No YAML, scripts or JSON files needed.
 
-## Configuration
+## What you get
 
-Before running the scripts, configure your login credentials in:
+For every child:
 
-``` text
-config.yaml
+| Entity | Example | Content |
+|---|---|---|
+| Calendar | `calendar.kind_timetable` | Lessons with teacher, room, topic and homework. Cancelled lessons and substitutions are marked. The attribute `lessons` lists all fetched lessons and `week_start` the Monday of the current school week (from Saturday: the coming week), e.g. for a timetable grid in a markdown card. |
+| To-do list | `todo.kind_homework` | Homework until its due date: the subject as title, the task and when it was given as description, the due date as the item's due date. You can tick items off in Home Assistant; SWOP is never changed. |
+| Select | `select.kind_timetable_week` | Which week a timetable view shows, as weeks from the current one (`-2` … `0` … `4`, following the fetched weeks). Use `select.select_previous` / `select_next` as arrows. Goes back to `0` after 15 minutes and at midnight. |
+| Select | `select.kind_homework_day` | Weekday (Monday to Friday) for the list below. Starts on today and goes back to today 15 minutes after a pick and at midnight. |
+| To-do list | `todo.kind_homework_of_the_day` | The homework of the picked day: due or given that day, and on today also everything still open. Ticking works like in the full list. |
+| Sensor | `sensor.kind_next_lesson` | The lesson in progress or the next one, with start, end, room and today's lessons |
+| Sensor | `sensor.kind_open_homework` | Number of open homework items, with the items as attribute |
+| Sensor | `sensor.kind_class_news` | Latest class news post, with the last 10 posts (title, author, date, text) as attribute `posts` |
+| Calendar | `calendar.kind_lunch` | Ordered lunches (Drei Köche). The attribute `meals` lists all fetched meals. |
+| Sensor | `sensor.kind_lunch_today` | Today's lunch, with allergens and the next days |
+
+For the school:
+
+- `sensor.<school>_school_news`: the latest school-wide post.
+- `binary_sensor.<school>_new_messages`: on while a SWOP messenger chat has unread
+  messages, with the number of such chats and a link to the messenger. SchoolHub
+  only compares message ids; it never opens a chat, so nothing is marked as read,
+  and message texts are not stored. Only created if the school uses the messenger.
+
+Entity IDs follow the language Home Assistant has when SchoolHub is added. The
+examples above are English; in German they are e.g. `calendar.kind_stundenplan`,
+`todo.kind_hausaufgaben`, `calendar.kind_essen` and
+`sensor.<school>_schulnachrichten`.
+
+For bug reports, download diagnostics from the integration's ⋮ menu. They contain
+counts and status only, no logins or names.
+
+Entity names follow your Home Assistant language (German or English).
+
+### Event for new news posts
+
+For every new class or school news post, SchoolHub fires the event
+`schoolhub_new_post`:
+
+```yaml
+event_type: schoolhub_new_post
+data:
+  config_entry_id: "01J…"  # the SchoolHub entry that saw the post
+  scope: class            # or "school"
+  students: ["Kind"]      # children in that class; empty for school news
+  class: "3a"             # null for school news
+  post_id: 12345
+  title: "Wandertag"
+  text: "Liebe Eltern, …"
+  author: "Lehrkraft A."
+  published: "2026-09-22T06:20:33+00:00"
 ```
 
-Only the relevant credentials need to be added there.
+Posts that already exist when you add the integration do not fire events. The
+recorder stores these events, see [Privacy](#privacy) to exclude them.
 
-## Available Fetch Scripts
+Example automation:
 
-### Drei Köche
-
-For Drei Köche, only the following script is required:
-
-``` text
-fetch_drei_koeche.py
+```yaml
+automation:
+  - alias: New school news
+    triggers:
+      - trigger: event
+        event_type: schoolhub_new_post
+    actions:
+      - action: notify.mobile_app_phone
+        data:
+          title: "{{ trigger.event.data.title }}"
+          message: "{{ trigger.event.data.text[:200] }}"
 ```
 
-### SWOP
+## Installation
 
-For SWOP, the following scripts are sufficient:
+Requires Home Assistant 2026.9 or newer.
 
-``` text
-fetch_swop_news.py
-fetch_swop_timetable.py
+### HACS (recommended)
+
+1. HACS → ⋮ → **Custom repositories** → add this repository's URL, type **Integration**.
+2. Install **SchoolHub** and restart Home Assistant.
+
+### Manual
+
+Copy `custom_components/schoolhub` into your Home Assistant `config/custom_components/`
+folder and restart Home Assistant.
+
+## Setup
+
+**Settings → Devices & services → Add integration → SchoolHub.** Add SchoolHub once
+for every login:
+
+- **SWOP:** pick your school from the list or enter the address of its SWOP portal
+  (for example `https://my-school.swop.schule`; just `my-school` works too). Then use
+  the same login as on the website. A parent or family login shows all its children.
+
+  Known schools are listed as "City - School" in `KNOWN_SCHOOLS` in
+  [`const.py`](custom_components/schoolhub/const.py). Pull requests that add more are
+  welcome.
+- **Drei Köche:** one login per child. Add SchoolHub again for each further child.
+
+### How children are matched between SWOP and Drei Köche
+
+Each Drei Köche login belongs to one child. SchoolHub finds that child among the
+SWOP children by name, trying these steps in order:
+
+1. **Same name**, ignoring upper/lower case, accents and spacing
+   ("Zoë Sophie" = "zoe  sophie").
+2. **First name only** on one side, with the same last name
+   ("Jonas" = "Jonas Paul").
+3. **Similar spelling** for typos ("Jonaz" ≈ "Jonas"), but only if exactly one
+   SWOP child clearly fits best, so siblings are never mixed up. A typo swaps a
+   letter; names with an added or dropped letter ("Paul" and "Paula") never match.
+
+Both services then use the same entity names (`kind_…`), which is how dashboards
+combine a child's timetable and lunch. SchoolHub checks this after every refresh
+and reports problems under **Settings → Repairs**:
+
+- **No SWOP child found:** shows both names, so you can correct the spelling at one
+  of the services.
+- **Matched despite different spelling:** a note that a typo was assumed.
+- **Different entity names:** e.g. `calendar.jonas_lunch` next to
+  `calendar.jonas_paul_timetable`. Select **Fix** to rename the Drei Köche
+  entities to the SWOP names in one step.
+
+**Options** (⋮ → Configure on the integration) set how many weeks before and after
+the current week are fetched. The defaults are 2 weeks back and 4 ahead for both.
+
+SWOP is refreshed every 30 minutes and Drei Köche every 3 hours. If a password
+changes, Home Assistant asks you to log in again.
+
+## Dashboard example
+
+[`examples/child_view.yaml`](examples/child_view.yaml) is a ready-made dashboard
+view for one child. Add it once per child, whether you have one or several:
+
+- **New messages:** an orange banner at the top while the SWOP messenger has unread
+  messages, with a link to it.
+- **Stundenplan:** a colorful timetable grid (period and time × Monday to Friday) with
+  dates, today highlighted in light blue, and ◀ / ▶ arrows to look at past and coming weeks (e.g. the lunch plan);
+  it returns to the current week by itself. Each subject has an emoji. Today is bold, cancelled lessons are
+  struck through and substitutions are in italics. A 🍽️ row shows the ordered
+  Drei Köche lunch in the lunch break.
+- **Hausaufgaben:** buttons Mo–Fr to pick a day (today is preselected; only the picked day is filled),
+  and one list with that day's homework to tick off. Each item shows the subject,
+  the task, when it was given and its due date, each once.
+- **Info:** all recent class news ("Klasse") and school news ("Schule"), side by side on screens
+  from 1000 px wide, as a list you can scroll through. Each post opens with a tap; the newest one is open.
+
+Create a dashboard (e.g. "Schule"). For each child, open a view in the dashboard
+editor (the existing empty one for the first child, "+" for each further child),
+choose ⋮ → Edit in YAML, paste the file and replace the placeholders with find &
+replace: `KIND_ID` with the child's entity prefix (e.g. `jonas_paul`),
+`KIND_NAME` with the name shown in the tab and header, and `SCHULE_ID` with the
+school's prefix from its school news sensor. They occur nowhere else in the file, so
+the replace is safe with or without "match case". Details are at the top of the file.
+It only uses built-in cards.
+
+For larger section titles and buttons, also install the optional theme
+[`examples/theme.yaml`](examples/theme.yaml): copy it to `<config>/themes/`, make sure
+`configuration.yaml` has `frontend: themes: !include_dir_merge_named themes`, and run
+the action `frontend.reload_themes`. The view already uses it
+(`theme: SchoolHub`); without it they show the default sizes. It only changes sizes,
+so colors and dark mode stay as they are.
+
+## Privacy
+
+Logins are stored in Home Assistant like those of any other integration. SchoolHub
+only talks to the two services and to nothing else. Ticked-off homework and seen
+news post IDs are stored locally in `.storage/schoolhub.<entry>`.
+
+Home Assistant's recorder stores events in its database, including
+`schoolhub_new_post` with the children's names and the post text. To keep it out:
+
+```yaml
+recorder:
+  exclude:
+    event_types:
+      - schoolhub_new_post
 ```
 
-The remaining components are assembled and used together by the
-respective scripts and configuration.
+Automations still receive the event.
 
-## Local Usage
+## Development
 
-When the fetch scripts are executed locally, an `output` directory is
-generated automatically.
+Requires Python 3.14 (like Home Assistant 2026.9).
 
-The directory contains the resulting `.json` files, organized by child
-where applicable.
-
-Example structure:
-
-``` text
-output/
-├── *.json
+```bash
+python3.14 -m venv .venv
+.venv/bin/pip install -r requirements_test.txt
+.venv/bin/pytest
+.venv/bin/ruff check . && .venv/bin/ruff format --check .
 ```
 
-The exact files depend on the selected fetch script and the data
-returned by the service.
-
-## Home Assistant Integration
-
-For a Home Assistant installation, place the project files in:
-
-``` text
-/homeassistant/scripts/schoolhub
-```
-
-The Python scripts can then be executed directly through Home Assistant
-automations.
-
-In the Home Assistant setup, the generated `.json` files are stored in:
-
-``` text
-/homeassistant/www/schoolhub
-```
-
-Files placed in this directory are made available locally by Home
-Assistant and can be retrieved directly using HTTP `GET` requests.
-
-This allows other Home Assistant components, dashboards, or integrations
-to consume the generated data.
-
-## Typical Workflow
-
-1.  Add the required login credentials to `config.yaml`.
-2.  Place the project files in `/homeassistant/scripts/schoolhub`.
-3.  Configure Home Assistant automations to run the relevant Python
-    fetch scripts.
-4.  The scripts retrieve the data and generate `.json` files.
-5.  The generated files are saved to `/homeassistant/www/schoolhub`.
-6.  The JSON files can be accessed locally through HTTP `GET` requests or can be used direcly inside Home Assistant.
+The tests run against anonymized recorded API responses in `tests/fixtures/`. They
+need no network access and no logins.
 
 ## License
 

@@ -1,0 +1,15 @@
+{
+  "domain": "schoolhub",
+  "name": "SchoolHub",
+  "codeowners": [
+    "@nubek",
+    "@eugenpirogoff"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/eugenpirogoff/ha-schoolhub",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/eugenpirogoff/ha-schoolhub/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}
