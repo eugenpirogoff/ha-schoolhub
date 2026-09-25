@@ -1,0 +1,479 @@
+# SchoolHub example view for one child: timetable grid, homework and news.
+# Add it once per child: one child gets one view, each further child
+# another one, with the same steps.
+#
+# How to use:
+#   1. Once: Settings → Dashboards → Add dashboard → "New dashboard from
+#      scratch", e.g. title "Schule", and open it.
+#   2. Per child: ⋮ → Edit dashboard. For the first child, open the existing
+#      empty view (pencil on its tab); for each further child, add a view
+#      with "+". In the view dialog, ⋮ → Edit in YAML, replace everything
+#      with this file.
+#   3. Replace the placeholders (find & replace, "replace all"):
+#        KIND_ID   → the child's entity prefix (see below), e.g. jonas_paul
+#        KIND_NAME → the name shown in the tab and header, e.g. Jonas
+#        SCHULE_ID → the school's prefix (see below)
+#      These names appear nowhere else in the file, so a case-insensitive
+#      replace is safe too. Then save.
+#
+# Language: this file uses German entity IDs and German texts. Entity IDs
+# follow the language Home Assistant had when SchoolHub was added. With
+# English, use child_view.en.yaml instead (generated from this file by
+# script/generate_examples.py).
+#
+# KIND_ID is the child's first name(s) as SWOP knows them, in lower case, with
+# spaces as underscores and without accents (e.g. "Zoë Sophie" → zoe_sophie).
+# SCHULE_ID is the school's name as shown on its device, written the same way
+# (e.g. ludwigsfelde_regenbogen_grundschule). To check both, go to Settings →
+# Entities and search for "stundenplan" and "schulnachrichten".
+#
+# The timetable grid is built from the "lessons" attribute of the timetable
+# calendar (all fetched weeks), as an HTML table using the full card width.
+# It shows the week picked with ◀ / ▶ (select.KIND_ID_stundenplan_woche:
+# weeks relative to the current one, which from Saturday on is the coming
+# week; back to it after 15 minutes). Subjects get an emoji. Today is marked
+# 📍 and bold, and each of its cells is a light blue info box (the markdown
+# card allows no cell background colors, so this is the built-in way).
+# Cancelled lessons are ❌ and struck through, substitutions 🔄 and in italics.
+#
+# A 🍽️ row shows the ordered Drei Köche meals (calendar.KIND_ID_essen, attribute
+# "meals") in bold at the lunch break: the first gap of 30+ minutes after 11:00, else below the
+# last lesson. A school day without an order shows a red "Kein Essen" box,
+# also when nothing is ordered all week. Without Drei Köche (no lunch
+# calendar for the child) the row doesn't appear.
+#
+# Hausaufgaben: buttons Mo–Fr pick a day (select.KIND_ID_hausaufgaben_tag, starts
+# on today and returns to today after 15 minutes). One to-do list
+# (todo.KIND_ID_hausaufgaben_des_tages) shows that day's homework: due or given
+# on it, and on today also everything still open. Each item appears once, with
+# the subject as title, the task and when it was given below, and the due date
+# as the list's own date chip; ticking it off is stored in Home Assistant.
+#
+# News posts from the last 3 days show 🆕.
+#
+# An orange banner at the top appears while the SWOP messenger has unread
+# messages (binary_sensor.SCHULE_ID_neue_nachrichten), with a link to it.
+#
+# The class and school news cards use the same template; only the sensor differs.
+#
+# Layout: up to 4 columns, so the view fills wide browsers (up to about
+# 2100 px). Every section spans the whole width. In Info, Klasse and Schule
+# sit side by side from 1000 px on and one below the other below that; the
+# YAML anchors (&klasse, &schule) keep the two cards defined only once.
+
+title: 🎒 KIND_NAME
+path: KIND_ID
+type: sections
+max_columns: 4
+# Larger titles and buttons, see examples/theme.yaml (optional).
+theme: SchoolHub
+header:
+  card:
+    type: markdown
+    text_only: true
+    # One large line: name, and the class a bit smaller next to it.
+    content: |-
+      {% set class = device_attr('calendar.KIND_ID_stundenplan', 'model_id') -%}
+      # KIND_NAME{{ ' <small>· Klasse ' ~ (class | e) ~ '</small>' if class }}
+sections:
+  # Only shown while the SWOP messenger has unread messages.
+  - type: grid
+    column_span: 4
+    visibility:
+      - condition: state
+        entity: binary_sensor.SCHULE_ID_neue_nachrichten
+        state: "on"
+    cards:
+      - type: markdown
+        text_only: true
+        grid_options:
+          columns: full
+          rows: auto
+        content: |-
+          {%- set e = 'binary_sensor.SCHULE_ID_neue_nachrichten' -%}
+          {%- set n = state_attr(e, 'unread_chats') | int(0) -%}
+          <ha-alert alert-type="warning" title="Neue Nachrichten in SWOP">{{ 'Es gibt ungelesene Nachrichten.' if n == 0 else n ~ (' Chat hat' if n == 1 else ' Chats haben') ~ ' ungelesene Nachrichten.' }} <a href="{{ state_attr(e, 'messenger_url') | e }}" target="_blank">Im Messenger öffnen</a></ha-alert>
+
+  - type: grid
+    column_span: 4
+    cards:
+      - type: heading
+        heading: Stundenplan
+        icon: mdi:timetable
+        grid_options:
+          columns: full
+          rows: auto
+      # ◀ / ▶ step through the fetched weeks (select.KIND_ID_stundenplan_woche,
+      # back to this week after 15 minutes); the buttons never change. In their
+      # own row, so the title keeps its width on phones.
+      - type: heading
+        heading: Woche
+        heading_style: subtitle
+        icon: mdi:calendar-week
+        grid_options:
+          columns: full
+          rows: auto
+        badges:
+          - type: button
+            icon: mdi:chevron-left
+            tap_action:
+              action: perform-action
+              perform_action: select.select_previous
+              target:
+                entity_id: select.KIND_ID_stundenplan_woche
+              data:
+                cycle: false
+          - type: button
+            text: Diese Woche
+            tap_action:
+              action: perform-action
+              perform_action: select.select_option
+              target:
+                entity_id: select.KIND_ID_stundenplan_woche
+              data:
+                option: "0"
+          - type: button
+            icon: mdi:chevron-right
+            tap_action:
+              action: perform-action
+              perform_action: select.select_next
+              target:
+                entity_id: select.KIND_ID_stundenplan_woche
+              data:
+                cycle: false
+      - type: markdown
+        grid_options:
+          columns: full
+          rows: auto
+        content: |-
+          {%- set cal = 'calendar.KIND_ID_stundenplan' -%}
+          {%- set offset = states('select.KIND_ID_stundenplan_woche') | int(0) -%}
+          {%- set this_monday = as_datetime(state_attr(cal, 'week_start') or now().date() | string).date() -%}
+          {%- set monday = this_monday + timedelta(weeks=offset) -%}
+          {%- set first_day = monday | string -%}
+          {%- set last_day = (monday + timedelta(days=4)) | string -%}
+          {%- set week = (state_attr(cal, 'lessons') or []) | selectattr('day', 'ge', first_day) | selectattr('day', 'le', last_day) | list -%}
+          {%- set meals = (state_attr('calendar.KIND_ID_essen', 'meals') or []) | selectattr('day', 'ge', first_day) | selectattr('day', 'le', last_day) | list -%}
+          {%- set has_lunch = state_attr('calendar.KIND_ID_essen', 'week_start') is not none -%}
+          {%- set days = ['Mo', 'Di', 'Mi', 'Do', 'Fr'] -%}
+          {%- set in_week = offset == 0 and now().date() >= monday -%}
+          {%- set today = now().weekday() if now().weekday() < 5 and in_week else -1 -%}
+          {#- From Saturday on, offset 0 is the coming week. -#}
+          {%- set shift = 1 if now().weekday() >= 5 else 0 -%}
+          {%- set weeks = offset + shift -%}
+          {%- set when = {-1: 'letzte Woche', 0: 'diese Woche', 1: 'nächste Woche', 2: 'übernächste Woche'} -%}
+          {%- set label = when[weeks] if weeks in when else ('in ' ~ weeks ~ ' Wochen' if weeks > 0 else 'vor ' ~ -weeks ~ ' Wochen') -%}
+          {%- set options = state_attr('select.KIND_ID_stundenplan_woche', 'options') or ['0'] -%}
+          {#- Another week than the current one is orange, so it is clear that
+              "Diese Woche" leads back. -#}
+          <b>KW {{ monday.strftime('%V') }}</b> · {{ label if offset == 0 else '<font color="orange"><b>' ~ label ~ '</b></font>' }}
+          {{- ' · <small>keine frühere Woche geladen</small>' if offset | string == options | first }}
+          {{- ' · <small>keine spätere Woche geladen</small>' if offset | string == options | last }}
+          {%- set numbers = week | map(attribute='number') | unique | sort | list -%}
+          {#- Lunch goes into the first break of 30+ minutes after 11:00, else at the end. -#}
+          {%- set ns = namespace(pos=none, time='', prev='') -%}
+          {%- for n in numbers -%}
+          {%- set first = week | selectattr('number', 'eq', n) | first -%}
+          {%- if ns.prev and ns.pos is none and first.start -%}
+          {%- set gap = (first.start[:2] | int) * 60 + (first.start[3:] | int) - (ns.prev[:2] | int) * 60 - (ns.prev[3:] | int) -%}
+          {%- if gap >= 30 and first.start >= '11:00' -%}
+          {%- set ns.pos = n -%}{%- set ns.time = ns.prev ~ '–' ~ first.start -%}
+          {%- endif -%}
+          {%- endif -%}
+          {%- set ns.prev = first.end or '' -%}
+          {%- endfor -%}
+          {%- macro lunch_row(time) -%}
+          <tr><td align="center">🍽️</td><td><b><small>{{ time or 'Mittag' }}</small></b></td>
+          {%- for d in range(5) %}<td>
+          {%- set day_meals = meals | selectattr('weekday', 'eq', d) | list -%}
+          {%- if not day_meals and week | selectattr('weekday', 'eq', d) | list -%}
+          <ha-alert alert-type="error"><b>Kein Essen</b></ha-alert>
+          {%- else -%}
+          {{ '<ha-alert alert-type="info">' if d == today }}
+          {%- for m in day_meals -%}
+          <b>{{ m.menu | regex_replace('\\s*\\([^)]*\\)', '') | regex_replace('\\s*\\[BIO\\]', '') | trim | e }}</b>{{ '<br>' if not loop.last }}
+          {%- endfor -%}
+          {{ '</ha-alert>' if d == today }}
+          {%- endif %}</td>{% endfor -%}
+          </tr>
+          {%- endmacro -%}
+          {%- if states(cal) in ['unavailable', 'unknown'] -%}
+          <br>⚠️ Der Stundenplan ist gerade nicht abrufbar.
+          {%- elif week or meals -%}
+          <table width="100%">
+          <tr><th width="4%"></th><th width="11%" align="left">🕘 Zeit</th>
+          {%- for d in range(5) %}{% set label = days[d] ~ ' <small>' ~ (monday + timedelta(days=d)).strftime('%d.%m.') ~ '</small>' %}<th width="17%" align="left">{{ '📍 <b>' ~ label ~ '</b>' if d == today else label }}</th>{% endfor -%}
+          </tr>
+          {%- for n in numbers -%}
+          {%- if has_lunch and n == ns.pos %}
+          {{ lunch_row(ns.time) }}
+          {%- endif -%}
+          {%- set row = week | selectattr('number', 'eq', n) | list -%}
+          {%- set first_row = n == numbers | first %}
+          <tr><td align="center"><b>{{ n }}</b></td><td><small>{{ row[0].start }}–{{ row[0].end }}</small></td>
+          {%- for d in range(5) %}<td>{{ '<ha-alert alert-type="info">' if d == today }}
+          {#- A school day off (holiday) says so once, in the first row. -#}
+          {%- if first_row and not week | selectattr('weekday', 'eq', d) | list %}🏖️ <i>frei</i>{% endif -%}
+          {%- for l in row | selectattr('weekday', 'eq', d) -%}
+          {%- if l.cancelled %}❌ <del>{{ l.subject | e }}</del>
+          {%- elif l.substituted %}🔄 <i>{{ l.subject | e }}</i>{{ '<br><small>' ~ (l.room | e) ~ '</small>' if l.room }}
+          {%- elif d == today %}{{ l.icon }} <b>{{ l.subject | e }}</b>
+          {%- else %}{{ l.icon }} {{ l.subject | e }}{% endif -%}
+          {{ '<br>' if not loop.last }}
+          {%- endfor -%}
+          {{ '</ha-alert>' if d == today }}</td>{% endfor -%}
+          </tr>
+          {%- endfor -%}
+          {%- if has_lunch and ns.pos is none %}
+          {{ lunch_row('') }}
+          {%- endif %}
+          </table>
+
+          <small>📍 heute · ❌ entfällt · 🔄 Vertretung · 🍽️ Mittagessen · <b>Kein Essen</b> = nichts bestellt</small>
+          {%- else -%}
+          <br>Für diese Woche gibt es keinen Stundenplan und kein Essen.
+          {%- endif -%}
+
+  - type: grid
+    column_span: 4
+    cards:
+      - type: heading
+        grid_options:
+          columns: full
+          rows: auto
+        heading: Hausaufgaben
+        badges:
+          - type: entity
+            entity: sensor.KIND_ID_offene_hausaufgaben
+            # "2 · offen": all open homework, not just the picked day.
+            name: offen
+            state_content: [state, name]
+            color: amber
+            show_state: true
+            show_icon: true
+        icon: mdi:notebook-check-outline
+      # Day buttons Mo–Fr, all the same shape: only the picked day is
+      # filled. Picking a day switches the list below to it; after 15
+      # minutes it goes back to today by itself.
+      - type: heading
+        grid_options:
+          columns: full
+          rows: auto
+        heading: Tag
+        heading_style: subtitle
+        icon: mdi:calendar-cursor
+        badges:
+          - type: button
+            text: Mo
+            color: primary
+            visibility:
+              - condition: state
+                entity: select.KIND_ID_hausaufgaben_tag
+                state: monday
+            tap_action:
+              action: perform-action
+              perform_action: select.select_option
+              target:
+                entity_id: select.KIND_ID_hausaufgaben_tag
+              data:
+                option: monday
+          - type: button
+            text: Mo
+            visibility:
+              - condition: state
+                entity: select.KIND_ID_hausaufgaben_tag
+                state_not: monday
+            tap_action:
+              action: perform-action
+              perform_action: select.select_option
+              target:
+                entity_id: select.KIND_ID_hausaufgaben_tag
+              data:
+                option: monday
+          - type: button
+            text: Di
+            color: primary
+            visibility:
+              - condition: state
+                entity: select.KIND_ID_hausaufgaben_tag
+                state: tuesday
+            tap_action:
+              action: perform-action
+              perform_action: select.select_option
+              target:
+                entity_id: select.KIND_ID_hausaufgaben_tag
+              data:
+                option: tuesday
+          - type: button
+            text: Di
+            visibility:
+              - condition: state
+                entity: select.KIND_ID_hausaufgaben_tag
+                state_not: tuesday
+            tap_action:
+              action: perform-action
+              perform_action: select.select_option
+              target:
+                entity_id: select.KIND_ID_hausaufgaben_tag
+              data:
+                option: tuesday
+          - type: button
+            text: Mi
+            color: primary
+            visibility:
+              - condition: state
+                entity: select.KIND_ID_hausaufgaben_tag
+                state: wednesday
+            tap_action:
+              action: perform-action
+              perform_action: select.select_option
+              target:
+                entity_id: select.KIND_ID_hausaufgaben_tag
+              data:
+                option: wednesday
+          - type: button
+            text: Mi
+            visibility:
+              - condition: state
+                entity: select.KIND_ID_hausaufgaben_tag
+                state_not: wednesday
+            tap_action:
+              action: perform-action
+              perform_action: select.select_option
+              target:
+                entity_id: select.KIND_ID_hausaufgaben_tag
+              data:
+                option: wednesday
+          - type: button
+            text: Do
+            color: primary
+            visibility:
+              - condition: state
+                entity: select.KIND_ID_hausaufgaben_tag
+                state: thursday
+            tap_action:
+              action: perform-action
+              perform_action: select.select_option
+              target:
+                entity_id: select.KIND_ID_hausaufgaben_tag
+              data:
+                option: thursday
+          - type: button
+            text: Do
+            visibility:
+              - condition: state
+                entity: select.KIND_ID_hausaufgaben_tag
+                state_not: thursday
+            tap_action:
+              action: perform-action
+              perform_action: select.select_option
+              target:
+                entity_id: select.KIND_ID_hausaufgaben_tag
+              data:
+                option: thursday
+          - type: button
+            text: Fr
+            color: primary
+            visibility:
+              - condition: state
+                entity: select.KIND_ID_hausaufgaben_tag
+                state: friday
+            tap_action:
+              action: perform-action
+              perform_action: select.select_option
+              target:
+                entity_id: select.KIND_ID_hausaufgaben_tag
+              data:
+                option: friday
+          - type: button
+            text: Fr
+            visibility:
+              - condition: state
+                entity: select.KIND_ID_hausaufgaben_tag
+                state_not: friday
+            tap_action:
+              action: perform-action
+              perform_action: select.select_option
+              target:
+                entity_id: select.KIND_ID_hausaufgaben_tag
+              data:
+                option: friday
+      # One list for the picked day: due or given that day (today: also
+      # everything still open). Title = subject, below = task and when it
+      # was given; the due date is the chip under it. Tick to mark done.
+      - type: todo-list
+        grid_options:
+          columns: full
+          rows: auto
+        entity: todo.KIND_ID_hausaufgaben_des_tages
+        hide_completed: false
+        hide_create: true
+        sort: duedate_asc
+
+  - type: grid
+    column_span: 4
+    cards:
+      - type: heading
+        grid_options:
+          columns: full
+          rows: auto
+        heading: Info
+        icon: mdi:information-outline
+      # Wide screens: Klasse and Schule side by side (readable line length).
+      - type: horizontal-stack
+        grid_options: &full
+          columns: full
+          rows: auto
+        visibility:
+          - condition: screen
+            media_query: "(min-width: 1000px)"
+        cards:
+          - &klasse
+            type: vertical-stack
+            cards:
+              - type: heading
+                heading: Klasse
+                heading_style: subtitle
+                icon: mdi:newspaper-variant-outline
+              - type: markdown
+                content: |-
+                  {%- set posts = state_attr('sensor.KIND_ID_klassennachrichten', 'posts') or [] -%}
+                  {%- set mark = '✉️' -%}
+                  {%- for p in posts -%}
+                  {%- set age = (now() - as_datetime(p.published)).days if p.published else 99 -%}
+                  <details{{ ' open' if loop.first }}><summary>{{ '🆕' if age < 3 else mark }} <b>{{ p.title | e }}</b><br><small>{{ p.author | e if p.author }}
+                  {%- if p.published %}{{ ' · ' if p.author }}{{ as_timestamp(p.published) | timestamp_custom('%d.%m.%Y') }}{% endif %}</small></summary>
+                  <blockquote>{{ (p.text or '') | e | replace('\n', '<br>') }}</blockquote>
+                  </details>{{ '<hr>' if not loop.last }}
+                  {%- else -%}
+                  Keine Nachrichten.
+                  {%- endfor -%}
+          - &schule
+            type: vertical-stack
+            cards:
+              - type: heading
+                heading: Schule
+                heading_style: subtitle
+                icon: mdi:bullhorn-outline
+              - type: markdown
+                content: |-
+                  {%- set posts = state_attr('sensor.SCHULE_ID_schulnachrichten', 'posts') or [] -%}
+                  {%- set mark = '🏫' -%}
+                  {%- for p in posts -%}
+                  {%- set age = (now() - as_datetime(p.published)).days if p.published else 99 -%}
+                  <details{{ ' open' if loop.first }}><summary>{{ '🆕' if age < 3 else mark }} <b>{{ p.title | e }}</b><br><small>{{ p.author | e if p.author }}
+                  {%- if p.published %}{{ ' · ' if p.author }}{{ as_timestamp(p.published) | timestamp_custom('%d.%m.%Y') }}{% endif %}</small></summary>
+                  <blockquote>{{ (p.text or '') | e | replace('\n', '<br>') }}</blockquote>
+                  </details>{{ '<hr>' if not loop.last }}
+                  {%- else -%}
+                  Keine Nachrichten.
+                  {%- endfor -%}
+      # Narrow screens: one below the other (same cards as above).
+      - <<: *klasse
+        grid_options: *full
+        visibility: &narrow
+          - condition: screen
+            media_query: "(max-width: 999px)"
+      - <<: *schule
+        grid_options: *full
+        visibility: *narrow

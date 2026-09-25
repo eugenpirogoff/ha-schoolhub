@@ -1,0 +1,183 @@
+{
+  "lehrernamen_by_id": {
+    "201": "Lehrkraft A.",
+    "202": "Lehrkraft B.",
+    "203": "Lehrkraft C.",
+    "204": "Lehrkraft D.",
+    "205": "Lehrkraft E.",
+    "206": "Lehrkraft F.",
+    "207": "Lehrkraft G.",
+    "208": "Lehrkraft H.",
+    "209": "Lehrkraft I.",
+    "210": "Lehrkraft J.",
+    "211": "Lehrkraft K."
+  },
+  "schulfaecher_by_id": {
+    "1": {
+      "id": 1,
+      "bezeichnung": "Mathematik",
+      "abkuerzung": "Ma"
+    },
+    "2": {
+      "id": 2,
+      "bezeichnung": "Deutsch",
+      "abkuerzung": "Deu"
+    },
+    "3": {
+      "id": 3,
+      "bezeichnung": "Sachunterricht",
+      "abkuerzung": "Su"
+    },
+    "4": {
+      "id": 4,
+      "bezeichnung": "Englisch",
+      "abkuerzung": "Eng"
+    },
+    "5": {
+      "id": 5,
+      "bezeichnung": "Musik",
+      "abkuerzung": "Mu"
+    },
+    "6": {
+      "id": 6,
+      "bezeichnung": "Kunst",
+      "abkuerzung": "Ku"
+    },
+    "7": {
+      "id": 7,
+      "bezeichnung": "Sport",
+      "abkuerzung": "Sp"
+    },
+    "8": {
+      "id": 8,
+      "bezeichnung": "Werken",
+      "abkuerzung": "We"
+    },
+    "9": {
+      "id": 9,
+      "bezeichnung": "Klassenrat",
+      "abkuerzung": "KR"
+    },
+    "10": {
+      "id": 10,
+      "bezeichnung": "Lesen",
+      "abkuerzung": "Le"
+    },
+    "11": {
+      "id": 11,
+      "bezeichnung": "Schwimmen",
+      "abkuerzung": "Schw"
+    },
+    "12": {
+      "id": 12,
+      "bezeichnung": "Ethik",
+      "abkuerzung": "Eth"
+    },
+    "13": {
+      "id": 13,
+      "bezeichnung": "Förderunterricht",
+      "abkuerzung": "Fö"
+    }
+  },
+  "raeume_by_id": {
+    "1": "",
+    "2": "Raum 103",
+    "3": "Raum 101",
+    "4": "Raum 102",
+    "5": "Turnhalle",
+    "6": "Sporthalle"
+  },
+  "tagesabschnitte_by_id": {
+    "7": {
+      "tagesabschnitt": {
+        "id": 7,
+        "beginn": "2000-01-01T08:00:00Z",
+        "bezeichnung": "0. Stunde",
+        "abkuerzung": null,
+        "ende": "2000-01-01T08:10:00Z",
+        "gruppe_nr": 1,
+        "ist_aktuell": true,
+        "stunde_nr": 0
+      }
+    },
+    "1": {
+      "tagesabschnitt": {
+        "id": 1,
+        "beginn": "2000-01-01T08:10:00Z",
+        "bezeichnung": "1. Stunde",
+        "abkuerzung": null,
+        "ende": "2000-01-01T08:55:00Z",
+        "gruppe_nr": 1,
+        "ist_aktuell": true,
+        "stunde_nr": 1
+      }
+    },
+    "2": {
+      "tagesabschnitt": {
+        "id": 2,
+        "beginn": "2000-01-01T08:55:00Z",
+        "bezeichnung": "2. Stunde",
+        "abkuerzung": null,
+        "ende": "2000-01-01T09:40:00Z",
+        "gruppe_nr": 1,
+        "ist_aktuell": true,
+        "stunde_nr": 2
+      }
+    },
+    "3": {
+      "tagesabschnitt": {
+        "id": 3,
+        "beginn": "2000-01-01T10:10:00Z",
+        "bezeichnung": "3. Stunde",
+        "abkuerzung": null,
+        "ende": "2000-01-01T10:55:00Z",
+        "gruppe_nr": 1,
+        "ist_aktuell": true,
+        "stunde_nr": 3
+      }
+    },
+    "4": {
+      "tagesabschnitt": {
+        "id": 4,
+        "beginn": "2000-01-01T10:55:00Z",
+        "bezeichnung": "4. Stunde",
+        "abkuerzung": null,
+        "ende": "2000-01-01T11:40:00Z",
+        "gruppe_nr": 1,
+        "ist_aktuell": true,
+        "stunde_nr": 4
+      }
+    },
+    "5": {
+      "tagesabschnitt": {
+        "id": 5,
+        "beginn": "2000-01-01T12:40:00Z",
+        "bezeichnung": "5. Stunde",
+        "abkuerzung": null,
+        "ende": "2000-01-01T13:25:00Z",
+        "gruppe_nr": 1,
+        "ist_aktuell": true,
+        "stunde_nr": 5
+      }
+    },
+    "6": {
+      "tagesabschnitt": {
+        "id": 6,
+        "beginn": "2000-01-01T13:25:00Z",
+        "bezeichnung": "6. Stunde",
+        "abkuerzung": null,
+        "ende": "2000-01-01T14:10:00Z",
+        "gruppe_nr": 1,
+        "ist_aktuell": true,
+        "stunde_nr": 6
+      }
+    }
+  },
+  "global_options": {
+    "swop_messenger": "true",
+    "messenger_subdomain": "messenger"
+  },
+  "local_config": {
+    "HOSTNAME": "musterschule.swop.schule"
+  }
+}

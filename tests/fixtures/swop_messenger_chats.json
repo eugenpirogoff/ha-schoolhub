@@ -1,0 +1,33 @@
+{
+  "success": true,
+  "chats": [
+    {
+      "id": 1,
+      "title": "",
+      "chat1zu1": true,
+      "closed_datetime": null,
+      "chat_join_as_member_token": "chat-a"
+    },
+    {
+      "id": 2,
+      "title": "",
+      "chat1zu1": true,
+      "closed_datetime": null,
+      "chat_join_as_member_token": "chat-b"
+    },
+    {
+      "id": 3,
+      "title": "",
+      "chat1zu1": true,
+      "closed_datetime": "2026-09-01T10:00:00Z",
+      "chat_join_as_member_token": "chat-c"
+    },
+    {
+      "id": 4,
+      "title": "",
+      "chat1zu1": true,
+      "closed_datetime": null,
+      "chat_join_as_member_token": "chat-d"
+    }
+  ]
+}

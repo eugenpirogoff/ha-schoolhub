@@ -1,0 +1,28 @@
+#!/bin/sh
+# Run Home Assistant's hassfest validation locally, without Docker.
+#
+# The first run checks out Home Assistant core (the version installed in .venv)
+# into .hassfest/ and creates a Python environment for it; later runs reuse it.
+set -eu
+cd "$(dirname "$0")/.."
+ROOT=$(pwd)
+DIR="$ROOT/.hassfest"
+VERSION=$(.venv/bin/python -c "from homeassistant.const import __version__; print(__version__)")
+
+if [ ! -d "$DIR/core-$VERSION" ]; then
+    echo "Setting up hassfest for Home Assistant $VERSION (once) ..."
+    mkdir -p "$DIR"
+    git -c advice.detachedHead=false clone -q --depth 1 --branch "$VERSION" https://github.com/home-assistant/core.git "$DIR/core-$VERSION"
+    python3.14 -m venv "$DIR/venv-$VERSION"
+    cd "$DIR/core-$VERSION"
+    PIN() { awk -F'==' "/^$1==/{print \$2}" "$2"; }
+    "$DIR/venv-$VERSION/bin/pip" install -q \
+        -c homeassistant/package_constraints.txt -r requirements.txt \
+        "pipdeptree==$(PIN pipdeptree requirements_test.txt)" \
+        "tqdm==$(PIN tqdm requirements_test.txt)" \
+        "ruff==$(PIN ruff requirements_test_pre_commit.txt)"
+fi
+
+cd "$DIR/core-$VERSION"
+PATH="$DIR/venv-$VERSION/bin:$PATH" python -m script.hassfest \
+    --integration-path "$ROOT/custom_components/schoolhub"

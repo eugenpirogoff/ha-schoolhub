@@ -1,2 +1,7 @@
-schoolhub/cache
-schoolhub/output
+__pycache__/
+.claude/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.hassfest/

@@ -1,0 +1,45 @@
+{
+  "success": true,
+  "id": 99,
+  "ecuser_id": 99,
+  "full_name": "Eltern Muster",
+  "vorname": "Eltern",
+  "nachname": "Muster",
+  "is_eltern": true,
+  "is_schueler": false,
+  "erziehungsberechtigt_fuer": [
+    {
+      "id": 101,
+      "ecuser_id": 101,
+      "full_name": "Muster, Anna Maria",
+      "vorname": "Anna Maria",
+      "nachname": "Muster",
+      "loginname": "kind1.muster",
+      "is_schueler": true,
+      "schueler_id": 501,
+      "klassenzug_id": 11,
+      "klassenseite_menue_id": 301,
+      "ecgroups": [
+        "Schueler",
+        "Schueler Klasse 3a"
+      ]
+    },
+    {
+      "id": 102,
+      "ecuser_id": 102,
+      "full_name": "Muster, Ben",
+      "vorname": "Ben",
+      "nachname": "Muster",
+      "loginname": "kind2.muster",
+      "is_schueler": true,
+      "schueler_id": 502,
+      "klassenzug_id": 12,
+      "klassenseite_menue_id": 302,
+      "ecgroups": [
+        "Schueler",
+        "Schueler Klasse 2c"
+      ]
+    }
+  ],
+  "member_access_token": "fake-member-access-token"
+}

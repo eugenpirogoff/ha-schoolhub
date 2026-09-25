@@ -1,0 +1,15 @@
+{
+  "subcode": 0,
+  "title": "Anmeldung",
+  "detail": "erfolgreich",
+  "user": {
+    "id": 1001,
+    "username": "K.Muster0001",
+    "firstname": "Anna Maria",
+    "lastname": "Muster",
+    "contractId": 9001,
+    "objectName": "Musterschule",
+    "groupName": "3a",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOiA0MTAyNDQ0ODAwfQ.c2lnbmF0dXJl"
+  }
+}

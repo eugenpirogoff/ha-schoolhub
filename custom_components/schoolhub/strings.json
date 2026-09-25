@@ -1,0 +1,190 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add a school service",
+        "description": "Add SchoolHub once per login: once for the SWOP school portal (all children of the parent account) and once for each child's Drei Köche lunch account. Children are matched by name.",
+        "menu_options": {
+          "swop": "SWOP school portal (timetable, homework, news)",
+          "drei_koeche": "Drei Köche (school lunch, one login per child)"
+        }
+      },
+      "swop": {
+        "title": "SWOP school portal",
+        "description": "Log in with the same account you use on the SWOP website. A parent or family account shows all its children.",
+        "data": {
+          "url": "School address",
+          "username": "Username",
+          "password": "Password"
+        },
+        "data_description": {
+          "url": "Pick your school or enter the address of its SWOP portal, e.g. {example_url}. The part before .swop.schule alone works too.",
+          "username": "Your SWOP login name, as on the website.",
+          "password": "Your SWOP password."
+        }
+      },
+      "drei_koeche": {
+        "title": "Drei Köche",
+        "description": "Log in with the Drei Köche account of one child. For each further child, add SchoolHub again and choose Drei Köche.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        },
+        "data_description": {
+          "username": "The child's Drei Köche login name.",
+          "password": "The child's Drei Köche password."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Log in again",
+        "description": "The password for {username} is no longer accepted. Enter the current password.",
+        "data": {
+          "password": "Password"
+        },
+        "data_description": {
+          "password": "The current password for this login."
+        }
+      },
+      "reconfigure": {
+        "title": "Change login",
+        "description": "Change the address or login of this entry. It must stay the same account; for another school or child, add SchoolHub again.",
+        "data": {
+          "url": "School address",
+          "username": "Username",
+          "password": "Password"
+        },
+        "data_description": {
+          "url": "Pick your school or enter the address of its SWOP portal, e.g. {example_url}.",
+          "username": "Your login name, as on the website.",
+          "password": "Your password."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "The username or password is wrong.",
+      "cannot_connect": "The service could not be reached. Check the school address and try again.",
+      "no_students": "The login works, but no children were found for it.",
+      "unknown": "Unexpected error. See the log for details.",
+      "invalid_url": "This is not a valid address. Enter e.g. {example_url}.",
+      "https_required": "The address must start with `https://` so the password is sent encrypted."
+    },
+    "abort": {
+      "already_configured": "This login is already set up.",
+      "reauth_successful": "Logged in again successfully.",
+      "wrong_account": "This is a different account. To add it, add SchoolHub again.",
+      "reconfigure_successful": "The login was changed."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Date range",
+        "description": "Which weeks to fetch, counted from the current week.",
+        "data": {
+          "weeks_past": "Weeks back",
+          "weeks_future": "Weeks ahead"
+        },
+        "data_description": {
+          "weeks_past": "Past weeks to fetch, e.g. for recent homework.",
+          "weeks_future": "Coming weeks to fetch, e.g. for the timetable and lunch."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "new_messages": {
+        "name": "New messages"
+      }
+    },
+    "calendar": {
+      "timetable": {
+        "name": "Timetable"
+      },
+      "meals": {
+        "name": "Lunch"
+      }
+    },
+    "select": {
+      "homework_day": {
+        "name": "Homework day",
+        "state": {
+          "monday": "Monday",
+          "tuesday": "Tuesday",
+          "wednesday": "Wednesday",
+          "thursday": "Thursday",
+          "friday": "Friday"
+        }
+      },
+      "timetable_week": {
+        "name": "Timetable week"
+      }
+    },
+    "sensor": {
+      "next_lesson": {
+        "name": "Next lesson"
+      },
+      "open_homework": {
+        "name": "Open homework"
+      },
+      "class_news": {
+        "name": "Class news"
+      },
+      "school_news": {
+        "name": "School news"
+      },
+      "meal_today": {
+        "name": "Lunch today"
+      }
+    },
+    "todo": {
+      "homework": {
+        "name": "Homework"
+      },
+      "homework_of_day": {
+        "name": "Homework of the day"
+      }
+    }
+  },
+  "exceptions": {
+    "unknown_homework": {
+      "message": "This homework no longer exists in SWOP."
+    },
+    "homework_read_only": {
+      "message": "Homework comes from SWOP and can only be ticked off, not edited."
+    },
+    "auth_failed": {
+      "message": "{service} rejected the login. Log in again."
+    },
+    "cannot_connect": {
+      "message": "{service} can't be reached right now."
+    },
+    "invalid_response": {
+      "message": "{service} sent an unexpected answer."
+    }
+  },
+  "issues": {
+    "student_not_found": {
+      "title": "No SWOP child found for {name}",
+      "description": "The Drei Köche login \"{entry}\" belongs to **{name}**, but no child with this name was found in SWOP. SWOP knows: {swop_names}.\n\nCheck the spelling of the names at both services. Until they match, the lunch of {name} can't be shown together with a timetable."
+    },
+    "student_similar_name": {
+      "title": "Is {name} the same child as {swop_name}?",
+      "description": "Drei Köche spells the name **{name}**, SWOP **{swop_name}**. The names are almost the same, so SchoolHub shows them as one child.\n\nIf that's right, you can ignore this message. If not, correct the name at one of the services."
+    },
+    "entity_prefix_mismatch": {
+      "title": "Lunch and timetable of {name} are shown separately",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Combine lunch and timetable of {swop_name}",
+            "description": "Drei Köche knows this child as **{name}**, SWOP as **{swop_name}**. Only continue if this is the same child.\n\nSo that a dashboard can show lunch and timetable together, the lunch entities get the same name start as the timetable (`{new_prefix}` instead of `{old_prefix}`):\n{renames}"
+          }
+        },
+        "abort": {
+          "entity_id_taken": "One of the new names is already in use. Rename the lunch entities under Settings → Entities."
+        }
+      }
+    }
+  }
+}

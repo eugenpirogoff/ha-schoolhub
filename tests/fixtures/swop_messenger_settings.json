@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "chat_einstellungen": [
+    {
+      "chat_id": 4,
+      "ignore_chat": true
+    }
+  ]
+}

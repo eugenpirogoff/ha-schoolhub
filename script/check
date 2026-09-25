@@ -1,0 +1,14 @@
+#!/bin/sh
+# Run the local checks: lint, formatting, example sync and tests.
+# With --hassfest also Home Assistant's integration validation (script/hassfest).
+set -eu
+cd "$(dirname "$0")/.."
+PY=.venv/bin/python
+
+.venv/bin/ruff check .
+.venv/bin/ruff format --check .
+$PY script/generate_examples.py --check
+.venv/bin/pytest -q
+if [ "${1:-}" = "--hassfest" ]; then
+    script/hassfest
+fi

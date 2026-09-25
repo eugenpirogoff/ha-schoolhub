@@ -1,0 +1,75 @@
+{
+  "subcode": 0,
+  "columns": [
+    {
+      "name": "Lieferdatum",
+      "property": "deliverDate",
+      "visible": 1,
+      "isModelProperty": 1
+    },
+    {
+      "name": "Menü",
+      "property": "menuName",
+      "visible": 1,
+      "isModelProperty": 1
+    }
+  ],
+  "data": [
+    {
+      "deliverDate": "30.09.26",
+      "amount": 1,
+      "idx": "M14",
+      "menuName": "<b>1x</b>&nbsp;&nbsp;Rührei <sup><b>c,g</b></sup> Spinat <sup><b></b></sup> Kartoffeln[BIO] <sup><b>VB</b></sup>",
+      "nr": 8
+    },
+    {
+      "deliverDate": "29.09.26",
+      "amount": 1,
+      "idx": "M3",
+      "menuName": "<b>1x</b>&nbsp;&nbsp;Linseneintopf[BIO] <sup><b>i,VB</b></sup> (Linse, Möhre, Kartoffel) <sup><b></b></sup> Brot <sup><b>a</b></sup>",
+      "nr": 9
+    },
+    {
+      "deliverDate": "28.09.26",
+      "amount": 1,
+      "idx": "M2",
+      "menuName": "<b>1x</b>&nbsp;&nbsp;Gemüsesuppe[BIO] <sup><b>i,VB</b></sup> (Möhre, Lauch, Sellerie) <sup><b></b></sup> Brötchen <sup><b>a</b></sup>",
+      "nr": 10
+    },
+    {
+      "deliverDate": "25.09.26",
+      "amount": 1,
+      "idx": "M2",
+      "menuName": "<b>1x</b>&nbsp;&nbsp;Kartoffelauflauf[BIO] <sup><b>g,VB</b></sup> (Kartoffel, Käse) <sup><b>g</b></sup>",
+      "nr": 11
+    },
+    {
+      "deliverDate": "24.09.26",
+      "amount": 1,
+      "idx": "M14",
+      "menuName": "<b>1x</b>&nbsp;&nbsp;Fischstäbchen <sup><b>a,d</b></sup> Kartoffelpüree <sup><b>g</b></sup>",
+      "nr": 12
+    },
+    {
+      "deliverDate": "23.09.26",
+      "amount": 1,
+      "idx": "M14",
+      "menuName": "<b>1x</b>&nbsp;&nbsp;Pfannkuchen[BIO] <sup><b>a,c,g,VB</b></sup> Apfelmus[BIO] <sup><b>VB</b></sup>",
+      "nr": 13
+    },
+    {
+      "deliverDate": "22.09.26",
+      "amount": 1,
+      "idx": "M2",
+      "menuName": "<b>1x</b>&nbsp;&nbsp;Gemüsebratling <sup><b>a,c,g,V</b></sup> Kräuterquark <sup><b>g</b></sup>",
+      "nr": 14
+    },
+    {
+      "deliverDate": "18.09.26",
+      "amount": 1,
+      "idx": "M14",
+      "menuName": "<b>1x</b>&nbsp;&nbsp;Milchreis <sup><b>g,V</b></sup> Kirschen <sup><b></b></sup>",
+      "nr": 15
+    }
+  ]
+}

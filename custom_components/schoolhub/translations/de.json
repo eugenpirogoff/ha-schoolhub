@@ -1,0 +1,190 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Schuldienst hinzufügen",
+        "description": "SchoolHub wird pro Login einmal hinzugefügt: einmal für das SWOP-Schulportal (alle Kinder des Elternkontos) und einmal für jedes Drei-Köche-Essenskonto eines Kindes. Kinder werden über ihren Namen zugeordnet.",
+        "menu_options": {
+          "swop": "SWOP-Schulportal (Stundenplan, Hausaufgaben, Nachrichten)",
+          "drei_koeche": "Drei Köche (Schulessen, ein Login pro Kind)"
+        }
+      },
+      "swop": {
+        "title": "SWOP-Schulportal",
+        "description": "Mit demselben Konto anmelden wie auf der SWOP-Webseite. Ein Eltern- oder Familienkonto zeigt alle zugehörigen Kinder.",
+        "data": {
+          "url": "Schuladresse",
+          "username": "Benutzername",
+          "password": "Passwort"
+        },
+        "data_description": {
+          "url": "Schule auswählen oder die Adresse ihres SWOP-Portals eingeben, z. B. {example_url}. Nur der Teil vor .swop.schule geht auch.",
+          "username": "Dein SWOP-Benutzername, wie auf der Webseite.",
+          "password": "Dein SWOP-Passwort."
+        }
+      },
+      "drei_koeche": {
+        "title": "Drei Köche",
+        "description": "Mit dem Drei-Köche-Konto eines Kindes anmelden. Für jedes weitere Kind SchoolHub erneut hinzufügen und Drei Köche wählen.",
+        "data": {
+          "username": "Benutzername",
+          "password": "Passwort"
+        },
+        "data_description": {
+          "username": "Der Drei-Köche-Benutzername des Kindes.",
+          "password": "Das Drei-Köche-Passwort des Kindes."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Erneut anmelden",
+        "description": "Das Passwort für {username} wird nicht mehr akzeptiert. Bitte das aktuelle Passwort eingeben.",
+        "data": {
+          "password": "Passwort"
+        },
+        "data_description": {
+          "password": "Das aktuelle Passwort dieses Logins."
+        }
+      },
+      "reconfigure": {
+        "title": "Login ändern",
+        "description": "Adresse oder Login dieses Eintrags ändern. Es muss dasselbe Konto bleiben; für eine andere Schule oder ein anderes Kind SchoolHub erneut hinzufügen.",
+        "data": {
+          "url": "Schuladresse",
+          "username": "Benutzername",
+          "password": "Passwort"
+        },
+        "data_description": {
+          "url": "Schule auswählen oder die Adresse ihres SWOP-Portals eingeben, z. B. {example_url}.",
+          "username": "Dein Benutzername, wie auf der Webseite.",
+          "password": "Dein Passwort."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Benutzername oder Passwort ist falsch.",
+      "cannot_connect": "Der Dienst ist nicht erreichbar. Bitte die Schuladresse prüfen und erneut versuchen.",
+      "no_students": "Die Anmeldung funktioniert, aber es wurden keine Kinder gefunden.",
+      "unknown": "Unerwarteter Fehler. Details stehen im Log.",
+      "invalid_url": "Das ist keine gültige Adresse. Bitte z. B. {example_url} eingeben.",
+      "https_required": "Die Adresse muss mit `https://` beginnen, damit das Passwort verschlüsselt übertragen wird."
+    },
+    "abort": {
+      "already_configured": "Dieser Login ist bereits eingerichtet.",
+      "reauth_successful": "Erfolgreich erneut angemeldet.",
+      "wrong_account": "Das ist ein anderes Konto. Um es hinzuzufügen, SchoolHub erneut hinzufügen.",
+      "reconfigure_successful": "Der Login wurde geändert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Zeitraum",
+        "description": "Welche Wochen abgerufen werden, gezählt ab der aktuellen Woche.",
+        "data": {
+          "weeks_past": "Wochen zurück",
+          "weeks_future": "Wochen voraus"
+        },
+        "data_description": {
+          "weeks_past": "Vergangene Wochen, z. B. für aktuelle Hausaufgaben.",
+          "weeks_future": "Kommende Wochen, z. B. für Stundenplan und Essen."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "new_messages": {
+        "name": "Neue Nachrichten"
+      }
+    },
+    "calendar": {
+      "timetable": {
+        "name": "Stundenplan"
+      },
+      "meals": {
+        "name": "Essen"
+      }
+    },
+    "select": {
+      "homework_day": {
+        "name": "Hausaufgaben-Tag",
+        "state": {
+          "monday": "Montag",
+          "tuesday": "Dienstag",
+          "wednesday": "Mittwoch",
+          "thursday": "Donnerstag",
+          "friday": "Freitag"
+        }
+      },
+      "timetable_week": {
+        "name": "Stundenplan-Woche"
+      }
+    },
+    "sensor": {
+      "next_lesson": {
+        "name": "Nächste Stunde"
+      },
+      "open_homework": {
+        "name": "Offene Hausaufgaben"
+      },
+      "class_news": {
+        "name": "Klassennachrichten"
+      },
+      "school_news": {
+        "name": "Schulnachrichten"
+      },
+      "meal_today": {
+        "name": "Essen heute"
+      }
+    },
+    "todo": {
+      "homework": {
+        "name": "Hausaufgaben"
+      },
+      "homework_of_day": {
+        "name": "Hausaufgaben des Tages"
+      }
+    }
+  },
+  "exceptions": {
+    "unknown_homework": {
+      "message": "Diese Hausaufgabe gibt es in SWOP nicht mehr."
+    },
+    "homework_read_only": {
+      "message": "Hausaufgaben kommen aus SWOP und können nur abgehakt, nicht bearbeitet werden."
+    },
+    "auth_failed": {
+      "message": "{service} hat die Anmeldung abgelehnt. Bitte erneut anmelden."
+    },
+    "cannot_connect": {
+      "message": "{service} ist gerade nicht erreichbar."
+    },
+    "invalid_response": {
+      "message": "{service} hat unerwartet geantwortet."
+    }
+  },
+  "issues": {
+    "student_not_found": {
+      "title": "Kein SWOP-Kind für {name} gefunden",
+      "description": "Der Drei-Köche-Login \"{entry}\" gehört zu **{name}**, aber in SWOP gibt es kein Kind mit diesem Namen. SWOP kennt: {swop_names}.\n\nBitte die Schreibweise der Namen bei beiden Diensten prüfen. Solange sie nicht übereinstimmen, kann das Essen von {name} nicht zusammen mit einem Stundenplan angezeigt werden."
+    },
+    "student_similar_name": {
+      "title": "Ist {name} dasselbe Kind wie {swop_name}?",
+      "description": "Drei Köche schreibt den Namen **{name}**, SWOP **{swop_name}**. Die Namen sind fast gleich, darum zeigt SchoolHub sie als ein Kind.\n\nWenn das stimmt, kann diese Meldung ignoriert werden. Sonst bitte den Namen bei einem der Dienste korrigieren."
+    },
+    "entity_prefix_mismatch": {
+      "title": "Essen und Stundenplan von {name} werden getrennt angezeigt",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Essen und Stundenplan von {swop_name} zusammenführen",
+            "description": "Drei Köche kennt dieses Kind als **{name}**, SWOP als **{swop_name}**. Nur fortfahren, wenn es dasselbe Kind ist.\n\nDamit ein Dashboard Essen und Stundenplan zusammen anzeigen kann, bekommen die Essens-Entitäten denselben Namensanfang wie der Stundenplan (`{new_prefix}` statt `{old_prefix}`):\n{renames}"
+          }
+        },
+        "abort": {
+          "entity_id_taken": "Einer der neuen Namen ist schon vergeben. Bitte die Essens-Entitäten unter Einstellungen → Entitäten umbenennen."
+        }
+      }
+    }
+  }
+}

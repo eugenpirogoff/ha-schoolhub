@@ -1,0 +1,21 @@
+{
+  "modulelist": {
+    "oben": [],
+    "mitte": [
+      {
+        "ecmodule_menue": {
+          "ecmodule_menue_id": 21,
+          "modultyp": "EcmodulText"
+        }
+      },
+      {
+        "ecmodule_menue": {
+          "ecmodule_menue_id": 20,
+          "modultyp": "EcmodulNews"
+        }
+      }
+    ],
+    "rechts": null
+  },
+  "globalemoduldaten": {}
+}
