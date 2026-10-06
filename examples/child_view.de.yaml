@@ -202,7 +202,11 @@ sections:
           {%- elif week or meals -%}
           <table width="100%">
           <tr><th width="4%"></th><th width="11%" align="left">🕘 Zeit</th>
-          {%- for d in range(5) %}{% set label = days[d] ~ ' <small>' ~ (monday + timedelta(days=d)).strftime('%d.%m.') ~ '</small>' %}<th width="17%" align="left">{{ '📍 <b>' ~ label ~ '</b>' if d == today else label }}</th>{% endfor -%}
+          {#- The markdown card allows no CSS, so a minimum column width comes from
+              non-breaking figure spaces after each day's name: wide enough for a
+              subject inside today's blue box. -#}
+          {%- set min_width = '&#8199;' * 12 -%}
+          {%- for d in range(5) %}{% set label = days[d] ~ ' <small>' ~ (monday + timedelta(days=d)).strftime('%d.%m.') ~ '</small>' %}<th width="17%" align="left">{{ '📍 <b>' ~ label ~ '</b>' if d == today else label }}{{ min_width }}</th>{% endfor -%}
           </tr>
           {%- for n in numbers -%}
           {%- if has_lunch and n == ns.pos %}
