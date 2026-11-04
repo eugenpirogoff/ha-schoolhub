@@ -7,14 +7,16 @@ import aiohttp
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import CONF_PASSWORD, CONF_URL, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import config_validation as cv, device_registry as dr
 from homeassistant.helpers.aiohttp_client import (
     async_create_clientsession,
 )
+from homeassistant.helpers.typing import ConfigType
 
+from . import llm_api
 from .api import DreiKoecheClient, SwopClient
 from .checks import async_check_students, async_clear_issues
-from .const import CONF_SERVICE, SERVICE_DREI_KOECHE, SERVICE_SWOP
+from .const import CONF_SERVICE, DOMAIN, SERVICE_DREI_KOECHE, SERVICE_SWOP
 from .coordinator import DreiKoecheCoordinator, SchoolhubConfigEntry, SwopCoordinator
 from .entity import school_identifier, student_identifier
 from .store import LocalState
@@ -29,6 +31,14 @@ PLATFORMS: dict[str, list[Platform]] = {
     ],
     SERVICE_DREI_KOECHE: [Platform.CALENDAR, Platform.SENSOR],
 }
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Offer the SchoolHub tools to conversation agents (see llm_api)."""
+    llm_api.async_register(hass)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: SchoolhubConfigEntry) -> bool:
