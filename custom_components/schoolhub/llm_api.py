@@ -65,9 +65,7 @@ Texts come from the school portal as teachers wrote them, usually in German. \
 Common abbreviations: AB = Arbeitsblatt (worksheet), AH = Arbeitsheft \
 (workbook), KA = Klassenarbeit (class test), LZK = Lernzielkontrolle (test), \
 HA = Hausaufgabe (homework), SU = Sachunterricht, S. = Seite (page), \
-Nr. = Nummer (number).
-Lunch allergen codes are the caterer's own codes. Do not guess what they \
-mean; give them as they are if asked.\
+Nr. = Nummer (number).\
 """
 
 
@@ -339,8 +337,8 @@ class LunchTool(_SchoolhubTool):
 
     name = "get_lunch"
     description = (
-        "Get the school lunch ordered for each child for one or more days, with the "
-        "caterer's allergen codes. A school day without a menu means no lunch was ordered."
+        "Get the school lunch ordered for each child for one or more days. Each day says "
+        "with lunch_ordered whether lunch is booked for the child that day."
     )
     parameters = vol.Schema(
         {CHILD: str, START: str, DAYS: vol.All(vol.Coerce(int), vol.Range(min=1, max=MAX_DAYS))}
@@ -357,17 +355,30 @@ class LunchTool(_SchoolhubTool):
             meals: dict[date, list[dict[str, Any]]] = {}
             for coordinator in child.lunch:
                 for meal in coordinator.data.meals:
-                    meals.setdefault(meal.day, []).append(
-                        _clean({"menu": meal.menu, "allergen_codes": meal.allergens})
-                    )
+                    # Allergen codes are left out: their meaning differs between
+                    # caterers, and a model guessing them could do harm.
+                    meals.setdefault(meal.day, []).append({"menu": meal.menu})
             covered = _covered(child.lunch, SERVICE_DREI_KOECHE)
             result.append(
                 {
                     **_child_info(child),
-                    "days": _per_day(hass, days, today, covered, "meals", meals),
+                    "days": [
+                        self._ordered(child, day)
+                        for day in _per_day(hass, days, today, covered, "meals", meals)
+                    ],
                 }
             )
         return {"children": result}
+
+    @staticmethod
+    def _ordered(child: _Child, day: dict[str, Any]) -> dict[str, Any]:
+        """Say outright whether lunch is ordered, so no meal is not read as unknown."""
+        if "meals" not in day:
+            return day
+        if day["meals"]:
+            return {**day, "lunch_ordered": True}
+        del day["meals"]
+        return {**day, "lunch_ordered": False, "note": f"No lunch ordered for {child.name}"}
 
 
 class NewsTool(_SchoolhubTool):

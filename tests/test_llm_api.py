@@ -118,10 +118,20 @@ async def test_lunch(hass: HomeAssistant) -> None:
     [child] = result["children"]
     assert (child["child"], child["class"]) == ("Anna", "3a")
     today = child["days"][0]
-    assert today["meals"] == [
-        {"menu": "Spaghetti Bolognese (Rind, Tomate, Zwiebel) Reibekäse", "allergen_codes": "a,i,g"}
-    ]
+    # Allergen codes are not passed on.
+    assert today["meals"] == [{"menu": "Spaghetti Bolognese (Rind, Tomate, Zwiebel) Reibekäse"}]
+    assert today["lunch_ordered"] is True
     assert len(child["days"]) == 3
+
+
+@pytest.mark.usefixtures("loaded")
+async def test_lunch_not_ordered(hass: HomeAssistant) -> None:
+    """A day without an order says so, instead of an empty list."""
+    result = await _call(hass, "get_lunch", date="2026-09-26")  # a Saturday
+    [day] = result["children"][0]["days"]
+    assert day["lunch_ordered"] is False
+    assert day["note"] == "No lunch ordered for Anna"
+    assert "meals" not in day
 
 
 @pytest.mark.usefixtures("loaded")

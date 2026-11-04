@@ -91,7 +91,7 @@ SchoolHub therefore offers its own LLM API, **SchoolHub**, with four tools:
 | --- | --- |
 | `get_homework` | Homework not yet past its due date: subject, task, teacher, when given and when due. Ticked-off items only with `include_done`. |
 | `get_timetable` | Lessons of one or more days (`date`, `days`): times, subject, room, teacher, cancelled or substitute. |
-| `get_lunch` | Ordered lunch of one or more days with the caterer's allergen codes. |
+| `get_lunch` | Ordered lunch (menu) of one or more days, and for each day whether lunch is booked at all (`lunch_ordered`). |
 | `get_school_news` | Latest school and class posts with full text, and unread portal chats. |
 
 Each tool takes an optional `child` (first name). Dates come as `YYYY-MM-DD`
@@ -102,8 +102,9 @@ out.
 To use it, open the settings of a conversation agent (e.g. Ollama, OpenAI,
 Anthropic) and pick **SchoolHub** under *Control Home Assistant*, next to or
 instead of *Assist*. The Model Context Protocol server integration offers it to
-MCP clients the same way. Allergen codes are passed on as they are: their
-meaning differs between caterers, so the model is told not to interpret them.
+MCP clients the same way. Allergen codes are not passed on: their meaning
+differs between caterers, and a model guessing them could do harm. The lunch
+sensor and calendar still show them.
 
 ## Installation
 
