@@ -14,7 +14,12 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 from typing import Any
 
-import voluptuous as vol
+try:
+    # Since Home Assistant 2026.10 tool parameters are probatio schemas; it
+    # cannot convert voluptuous ones for the model. Same API, so one name.
+    import probatio as vol
+except ImportError:  # Home Assistant 2026.9
+    import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
@@ -60,7 +65,7 @@ WEEKDAY_NAMES = {
 
 PROMPT = """\
 SchoolHub has school data for these children: {children}.
-Today is {weekday}, {today}.
+Today is {weekday}, {today}; tomorrow is {tomorrow_weekday}, {tomorrow}.
 Use the SchoolHub tools for questions about homework, the timetable, school \
 lunch and news from the school or a child's class. Each tool takes the \
 child's first name; leave it out to get all children.
@@ -98,13 +103,39 @@ def _clean(values: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# Words small models pass instead of a date, mapped to days from today.
+RELATIVE_DAYS = {
+    "heute": 0,
+    "today": 0,
+    "morgen": 1,
+    "tomorrow": 1,
+    "übermorgen": 2,
+    "uebermorgen": 2,
+    "day after tomorrow": 2,
+}
+
+
 def _parse_day(value: str | None, today: date) -> date:
+    """Return a date from YYYY-MM-DD, "morgen"/"tomorrow" or a weekday name.
+
+    A weekday means its next occurrence, today included.
+    """
     if not value:
         return today
+    word = " ".join(value.casefold().split())
+    if word in RELATIVE_DAYS:
+        return today + timedelta(days=RELATIVE_DAYS[word])
+    for names in WEEKDAY_NAMES.values():
+        folded = [name.casefold() for name in names]
+        if word in folded:
+            return today + timedelta(days=(folded.index(word) - today.weekday()) % 7)
     try:
         return date.fromisoformat(value)
     except ValueError as err:
-        raise HomeAssistantError(f"Invalid date {value!r}, use YYYY-MM-DD") from err
+        raise HomeAssistantError(
+            f"Invalid date {value!r}, use YYYY-MM-DD, e.g. tomorrow is "
+            f"{(today + timedelta(days=1)).isoformat()}"
+        ) from err
 
 
 @dataclass(slots=True)
@@ -210,6 +241,14 @@ def _per_day(
 class _SchoolhubTool(llm.Tool):
     """A tool that looks up the children on each call."""
 
+    # Since Home Assistant 2026.10 a tool names the integration providing it,
+    # and can say it only reads (from data already fetched, nothing outside).
+    integration = DOMAIN
+    if (annotations_type := getattr(llm, "ToolAnnotations", None)) is not None:
+        annotations = annotations_type(
+            read_only=True, destructive=False, idempotent=True, open_world=False
+        )
+
     async def async_call(
         self, hass: HomeAssistant, tool_input: llm.ToolInput, llm_context: llm.LLMContext
     ) -> JsonObjectType:
@@ -228,7 +267,9 @@ class _SchoolhubTool(llm.Tool):
 
 
 CHILD = vol.Optional("child", description="First name of the child; leave out for all children")
-START = vol.Optional("date", description="First day as YYYY-MM-DD; default today")
+START = vol.Optional(
+    "date", description="First day as YYYY-MM-DD, or today/tomorrow/a weekday; default today"
+)
 DAYS = vol.Optional("days", default=1, description=f"Number of days, 1 to {MAX_DAYS}")
 
 
@@ -490,6 +531,8 @@ class SchoolhubAPI(llm.API):
                 children=names or "none yet",
                 weekday=_weekday(self.hass, today),
                 today=today.isoformat(),
+                tomorrow_weekday=_weekday(self.hass, today + timedelta(days=1)),
+                tomorrow=(today + timedelta(days=1)).isoformat(),
             ),
             llm_context=llm_context,
             tools=[HomeworkTool(), TimetableTool(), LunchTool(), NewsTool()],

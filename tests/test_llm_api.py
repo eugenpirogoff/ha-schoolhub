@@ -52,7 +52,8 @@ async def test_prompt_names_children_without_middle_names(hass: HomeAssistant) -
     api = await _api(hass)
     assert "Anna (class 3a), Ben (class 2c)" in api.api_prompt
     assert "Maria" not in api.api_prompt
-    assert "Today is Monday, 2026-09-21." in api.api_prompt
+    assert "Today is Monday, 2026-09-21; tomorrow is Tuesday, 2026-09-22." in api.api_prompt
+    assert all(tool.integration == DOMAIN for tool in api.tools)
     assert [tool.name for tool in api.tools] == [
         "get_homework",
         "get_timetable",
@@ -152,8 +153,8 @@ async def test_news(hass: HomeAssistant) -> None:
 async def test_unknown_child_and_bad_date(hass: HomeAssistant) -> None:
     with pytest.raises(HomeAssistantError, match="Known children: Anna, Ben"):
         await _call(hass, "get_homework", child="Carla")
-    with pytest.raises(HomeAssistantError, match="YYYY-MM-DD"):
-        await _call(hass, "get_lunch", date="morgen")
+    with pytest.raises(HomeAssistantError, match="tomorrow is 2026-09-22"):
+        await _call(hass, "get_lunch", date="next week")
 
 
 @pytest.mark.usefixtures("loaded")
@@ -175,3 +176,22 @@ async def test_not_offered_to_mcp_clients(hass: HomeAssistant) -> None:
     api = await llm.async_get_api(hass, DOMAIN, mcp_context)
     assert api.tools == []
     assert api.api_prompt == ""
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("morgen", "2026-09-22"),
+        ("Tomorrow", "2026-09-22"),
+        ("heute", "2026-09-21"),
+        ("übermorgen", "2026-09-23"),
+        ("Freitag", "2026-09-25"),
+        ("monday", "2026-09-21"),
+        ("2026-09-24", "2026-09-24"),
+    ],
+)
+@pytest.mark.usefixtures("loaded")
+async def test_date_words(hass: HomeAssistant, value: str, expected: str) -> None:
+    """Small models often pass "morgen" or a weekday instead of a date."""
+    result = await _call(hass, "get_lunch", date=value)
+    assert result["children"][0]["days"][0]["date"] == expected
