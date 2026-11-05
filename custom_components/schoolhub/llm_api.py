@@ -44,6 +44,9 @@ from .models import (
 
 API_NAME = "SchoolHub"
 
+# LLMContext.platform of requests from the Model Context Protocol server integration.
+MCP_SERVER_PLATFORM = "mcp_server"
+
 # Longest stretch of days one call returns.
 MAX_DAYS = 14
 MAX_POSTS = 10
@@ -470,6 +473,10 @@ class SchoolhubAPI(llm.API):
     """The SchoolHub tools for conversation agents."""
 
     async def async_get_api_instance(self, llm_context: llm.LLMContext) -> llm.APIInstance:
+        if llm_context.platform == MCP_SERVER_PLATFORM:
+            # Meant for Home Assistant's own (voice) agents: the MCP server, which
+            # can offer all LLM APIs, gets nothing, so the data stays in Home Assistant.
+            return llm.APIInstance(api=self, api_prompt="", llm_context=llm_context, tools=[])
         today = dt_util.now().date()
         names = ", ".join(
             f"{child.name} (class {child.student.class_name})"

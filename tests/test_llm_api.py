@@ -160,3 +160,18 @@ async def test_unknown_child_and_bad_date(hass: HomeAssistant) -> None:
 async def test_full_name_selects_child(hass: HomeAssistant) -> None:
     result = await _call(hass, "get_timetable", child="Anna Maria")
     assert result["children"][0]["child"] == "Anna"
+
+
+@pytest.mark.usefixtures("loaded")
+async def test_not_offered_to_mcp_clients(hass: HomeAssistant) -> None:
+    """MCP clients get no tools and no prompt, even with "all LLM APIs" on."""
+    mcp_context = llm.LLMContext(
+        platform="mcp_server",
+        context=Context(),
+        language="*",
+        assistant="conversation",
+        device_id=None,
+    )
+    api = await llm.async_get_api(hass, DOMAIN, mcp_context)
+    assert api.tools == []
+    assert api.api_prompt == ""

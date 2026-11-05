@@ -101,8 +101,9 @@ out.
 
 To use it, open the settings of a conversation agent (e.g. Ollama, OpenAI,
 Anthropic) and pick **SchoolHub** under *Control Home Assistant*, next to or
-instead of *Assist*. The Model Context Protocol server integration offers it to
-MCP clients the same way. Allergen codes are not passed on: their meaning
+instead of *Assist*. The tools are meant for Home Assistant's own agents, e.g.
+for voice: the Model Context Protocol server integration gets no SchoolHub
+tools, even when it offers all LLM APIs. Allergen codes are not passed on: their meaning
 differs between caterers, and a model guessing them could do harm. The lunch
 sensor and calendar still show them.
 
