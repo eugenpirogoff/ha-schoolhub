@@ -12,6 +12,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import date, timedelta
+import re
 from typing import Any
 
 try:
@@ -186,24 +187,32 @@ def _children(hass: HomeAssistant) -> list[_Child]:
     return sorted(children.values(), key=lambda child: fold_name(child.name))
 
 
+# "Torvi und Päivi", "Torvi, Päivi", "Torvi & Päivi": small models put several
+# children into the one name argument.
+_NAME_LIST = re.compile(r"\s*(?:,|/|&|\+|\bund\b|\band\b)\s*", re.IGNORECASE)
+
+
 def _select(children: list[_Child], name: str | None) -> list[_Child]:
-    """Return the child called `name` (first or full name), or all children."""
+    """Return the children named in `name` (first or full names), or all children."""
     if not name:
         return children
-    wanted = fold_name(name)
-    found = [
-        child
-        for child in children
-        if wanted
-        in (
-            fold_name(child.name),
-            fold_name(child.student.first_name),
-            fold_name(f"{child.student.first_name} {child.student.last_name}"),
-        )
-    ]
-    if not found:
-        known = ", ".join(child.name for child in children) or "none"
-        raise HomeAssistantError(f"No child named {name!r}. Known children: {known}")
+    found: list[_Child] = []
+    for part in filter(None, _NAME_LIST.split(name)):
+        wanted = fold_name(part)
+        matches = [
+            child
+            for child in children
+            if wanted
+            in (
+                fold_name(child.name),
+                fold_name(child.student.first_name),
+                fold_name(f"{child.student.first_name} {child.student.last_name}"),
+            )
+        ]
+        if not matches:
+            known = ", ".join(child.name for child in children) or "none"
+            raise HomeAssistantError(f"No child named {part!r}. Known children: {known}")
+        found.extend(child for child in matches if child not in found)
     return found
 
 
@@ -274,7 +283,9 @@ class _SchoolhubTool(llm.Tool):
         raise NotImplementedError
 
 
-CHILD = vol.Optional("child", description="First name of the child; leave out for all children")
+CHILD = vol.Optional(
+    "child", description="First name of one or more children; leave out for all children"
+)
 # Required: small models leave optional arguments out, and "tomorrow" then
 # silently became today.
 START = vol.Required(

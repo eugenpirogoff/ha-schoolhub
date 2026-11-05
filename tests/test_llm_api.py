@@ -219,3 +219,11 @@ def test_one_line() -> None:
 
     assert _one_line("- M AH 26  27\n- Werbeprospekte\n") == "M AH 26  27; Werbeprospekte"
     assert _one_line("Lesen S. 12") == "Lesen S. 12"
+
+
+@pytest.mark.parametrize("names", ["Anna und Ben", "Anna, Ben", "ben & ANNA", "Anna and Ben"])
+@pytest.mark.usefixtures("loaded")
+async def test_several_children_in_one_name(hass: HomeAssistant, names: str) -> None:
+    """Small models put several children into the one name argument."""
+    result = await _call(hass, "get_homework", child=names)
+    assert {child["child"] for child in result["children"]} == {"Anna", "Ben"}
