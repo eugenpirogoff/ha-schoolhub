@@ -117,6 +117,12 @@ RELATIVE_DAYS = {
 }
 
 
+def _one_line(text: str) -> str:
+    """Join the lines of a teacher's text, dropping list dashes: "- AH 26\n- AB" -> "AH 26; AB"."""
+    lines = [line.strip().lstrip("-•*").strip() for line in text.splitlines()]
+    return "; ".join(line for line in lines if line)
+
+
 def _parse_day(value: str | None, today: date) -> date:
     """Return a date from YYYY-MM-DD, "morgen"/"tomorrow" or a weekday name.
 
@@ -283,9 +289,8 @@ class HomeworkTool(_SchoolhubTool):
 
     name = "get_homework"
     description = (
-        "Get each child's homework that is not yet past its due date: subject, task, "
-        "when it was given and when it is due. Ticked-off homework is left out unless "
-        "include_done is true."
+        "Get each child's homework that is not yet past its due date: subject, task "
+        "and when it is due. Ticked-off homework is left out unless include_done is true."
     )
     parameters = vol.Schema(
         {
@@ -316,14 +321,14 @@ class HomeworkTool(_SchoolhubTool):
 
     @staticmethod
     def _item(hass: HomeAssistant, item: Homework, done: bool, today: date) -> dict[str, Any]:
+        # Kept short on purpose: small models gave no answer at all for the
+        # longer form with the assigned date and teacher of every item.
         return _clean(
             {
                 "subject": item.subject,
-                "task": item.text,
-                **_day(hass, "assigned", item.assigned, today),
+                "task": _one_line(item.text),
                 **(_day(hass, "due", item.due, today) if item.due else {"due": "no due date"}),
                 "done": done,
-                "teacher": item.teacher,
             }
         )
 

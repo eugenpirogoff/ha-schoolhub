@@ -82,6 +82,8 @@ async def test_homework(hass: HomeAssistant, loaded: MockConfigEntry) -> None:
     assert dated["due_weekday"] == "Wednesday"
     assert dated["due_in_days"] == 2
     assert "done" not in dated
+    # Short items: no assigned date or teacher, which small models choked on.
+    assert dated.keys() == {"subject", "task", "due", "due_weekday", "due_in_days"}
 
     # Ticked-off homework is left out unless asked for.
     coordinator = loaded.runtime_data
@@ -206,3 +208,10 @@ async def test_date_is_required(hass: HomeAssistant) -> None:
         tool = next(tool for tool in api.tools if tool.name == name)
         with pytest.raises(vol.Invalid):
             tool.parameters({})
+
+
+def test_one_line() -> None:
+    from custom_components.schoolhub.llm_api import _one_line
+
+    assert _one_line("- M AH 26  27\n- Werbeprospekte\n") == "M AH 26  27; Werbeprospekte"
+    assert _one_line("Lesen S. 12") == "Lesen S. 12"

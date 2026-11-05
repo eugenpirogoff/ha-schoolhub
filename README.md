@@ -89,7 +89,7 @@ SchoolHub therefore offers its own LLM API, **SchoolHub**, with four tools:
 
 | Tool | Returns |
 | --- | --- |
-| `get_homework` | Homework not yet past its due date: subject, task, teacher, when given and when due. Ticked-off items only with `include_done`. |
+| `get_homework` | Homework not yet past its due date: subject, task and when it is due. Ticked-off items only with `include_done`. |
 | `get_timetable` | Lessons of one or more days (`date`, `days`): times, subject, room, teacher, cancelled or substitute. |
 | `get_lunch` | Ordered lunch (menu) of one or more days, and for each day whether lunch is booked at all (`lunch_ordered`). |
 | `get_school_news` | Latest school and class posts with full text, and unread portal chats. |
