@@ -9,6 +9,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
 from custom_components.schoolhub.const import DOMAIN
+from custom_components.schoolhub.llm_api import vol
 from homeassistant.core import Context, HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import llm
@@ -94,7 +95,7 @@ async def test_homework(hass: HomeAssistant, loaded: MockConfigEntry) -> None:
 
 @pytest.mark.usefixtures("loaded")
 async def test_timetable(hass: HomeAssistant) -> None:
-    result = await _call(hass, "get_timetable", child="Ben", days="2")
+    result = await _call(hass, "get_timetable", child="Ben", date="heute", days="2")
     [child] = result["children"]
     assert child["child"] == "Ben"
     monday, tuesday = child["days"]
@@ -115,7 +116,7 @@ async def test_timetable_outside_fetched_weeks(hass: HomeAssistant) -> None:
 @pytest.mark.usefixtures("loaded")
 async def test_lunch(hass: HomeAssistant) -> None:
     """Lunch is matched to the SWOP child; children without a login are left out."""
-    result = await _call(hass, "get_lunch", days=3)
+    result = await _call(hass, "get_lunch", date="2026-09-21", days=3)
     [child] = result["children"]
     assert (child["child"], child["class"]) == ("Anna", "3a")
     today = child["days"][0]
@@ -159,7 +160,7 @@ async def test_unknown_child_and_bad_date(hass: HomeAssistant) -> None:
 
 @pytest.mark.usefixtures("loaded")
 async def test_full_name_selects_child(hass: HomeAssistant) -> None:
-    result = await _call(hass, "get_timetable", child="Anna Maria")
+    result = await _call(hass, "get_timetable", child="Anna Maria", date="today")
     assert result["children"][0]["child"] == "Anna"
 
 
@@ -195,3 +196,13 @@ async def test_date_words(hass: HomeAssistant, value: str, expected: str) -> Non
     """Small models often pass "morgen" or a weekday instead of a date."""
     result = await _call(hass, "get_lunch", date=value)
     assert result["children"][0]["days"][0]["date"] == expected
+
+
+@pytest.mark.usefixtures("loaded")
+async def test_date_is_required(hass: HomeAssistant) -> None:
+    """Without a date a model's "tomorrow" would silently become today."""
+    api = await _api(hass)
+    for name in ("get_timetable", "get_lunch"):
+        tool = next(tool for tool in api.tools if tool.name == name)
+        with pytest.raises(vol.Invalid):
+            tool.parameters({})

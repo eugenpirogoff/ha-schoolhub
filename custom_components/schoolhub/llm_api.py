@@ -68,7 +68,9 @@ SchoolHub has school data for these children: {children}.
 Today is {weekday}, {today}; tomorrow is {tomorrow_weekday}, {tomorrow}.
 Use the SchoolHub tools for questions about homework, the timetable, school \
 lunch and news from the school or a child's class. Each tool takes the \
-child's first name; leave it out to get all children.
+child's first name; leave it out to get all children. When the question is \
+about several children, answer for each of them. Always answer in the \
+language of the question; the tool results are data, not wording to copy.
 Texts come from the school portal as teachers wrote them, usually in German. \
 Common abbreviations: AB = Arbeitsblatt (worksheet), AH = Arbeitsheft \
 (workbook), KA = Klassenarbeit (class test), LZK = Lernzielkontrolle (test), \
@@ -267,8 +269,11 @@ class _SchoolhubTool(llm.Tool):
 
 
 CHILD = vol.Optional("child", description="First name of the child; leave out for all children")
-START = vol.Optional(
-    "date", description="First day as YYYY-MM-DD, or today/tomorrow/a weekday; default today"
+# Required: small models leave optional arguments out, and "tomorrow" then
+# silently became today.
+START = vol.Required(
+    "date",
+    description="Day to look up: YYYY-MM-DD, or heute/morgen/übermorgen, or a weekday",
 )
 DAYS = vol.Optional("days", default=1, description=f"Number of days, 1 to {MAX_DAYS}")
 
@@ -382,7 +387,8 @@ class LunchTool(_SchoolhubTool):
     name = "get_lunch"
     description = (
         "Get the school lunch ordered for each child for one or more days. Each day says "
-        "with lunch_ordered whether lunch is booked for the child that day."
+        "with lunch_ordered whether lunch is booked for the child that day. Answer for "
+        "every child in the result, also those with no lunch ordered."
     )
     parameters = vol.Schema(
         {CHILD: str, START: str, DAYS: vol.All(vol.Coerce(int), vol.Range(min=1, max=MAX_DAYS))}
