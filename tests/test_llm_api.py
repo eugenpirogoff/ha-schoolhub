@@ -55,6 +55,10 @@ async def test_prompt_names_children_without_middle_names(hass: HomeAssistant) -
     assert "Maria" not in api.api_prompt
     assert "Today is Monday, 2026-09-21; tomorrow is Tuesday, 2026-09-22." in api.api_prompt
     assert all(tool.integration == DOMAIN for tool in api.tools)
+    # German keywords and the children's names point small models at the right tool.
+    homework = next(tool for tool in api.tools if tool.name == "get_homework")
+    assert homework.description.startswith("Hausaufgaben (homework)")
+    assert homework.description.endswith("Children: Anna, Ben.")
     assert [tool.name for tool in api.tools] == [
         "get_homework",
         "get_timetable",

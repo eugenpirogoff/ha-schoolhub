@@ -289,8 +289,9 @@ class HomeworkTool(_SchoolhubTool):
 
     name = "get_homework"
     description = (
-        "Get each child's homework that is not yet past its due date: subject, task "
-        "and when it is due. Ticked-off homework is left out unless include_done is true."
+        "Hausaufgaben (homework) of the children: use this, not a to-do list, for any "
+        "question about homework. Returns homework not yet past its due date: subject, "
+        "task and when it is due. Ticked-off homework is left out unless include_done is true."
     )
     parameters = vol.Schema(
         {
@@ -338,8 +339,9 @@ class TimetableTool(_SchoolhubTool):
 
     name = "get_timetable"
     description = (
-        "Get each child's lessons for one or more days: time, subject, room and teacher, "
-        "and whether a lesson is cancelled or taught by a substitute. A day without "
+        "Stundenplan (timetable) of the children: each child's lessons for one or more "
+        "days: time, subject, room and teacher, and whether a lesson is cancelled or "
+        "taught by a substitute. A day without "
         "lessons is a day off or a weekend."
     )
     parameters = vol.Schema(
@@ -391,7 +393,8 @@ class LunchTool(_SchoolhubTool):
 
     name = "get_lunch"
     description = (
-        "Get the school lunch ordered for each child for one or more days. Each day says "
+        "Mittagessen / Schulessen (school lunch) of the children: the lunch ordered for "
+        "each child for one or more days. Each day says "
         "with lunch_ordered whether lunch is booked for the child that day. Answer for "
         "every child in the result, also those with no lunch ordered."
     )
@@ -441,7 +444,8 @@ class NewsTool(_SchoolhubTool):
 
     name = "get_school_news"
     description = (
-        "Get the latest news posts with their full text: from the whole school, from "
+        "Schulnachrichten / Klassennachrichten (school and class news): the latest posts "
+        "with their full text: from the whole school, from "
         "each child's class, or both. Also tells how many school portal chats have "
         "unread messages."
     )
@@ -520,6 +524,13 @@ class NewsTool(_SchoolhubTool):
         )
 
 
+def _with_children[T: llm.Tool](tool: T, names: list[str]) -> T:
+    """Name the children in the description, so a model links "Torvi" to the tool."""
+    if names:
+        tool.description = f"{tool.description} Children: {', '.join(names)}."
+    return tool
+
+
 @dataclass(slots=True, kw_only=True)
 class SchoolhubAPI(llm.API):
     """The SchoolHub tools for conversation agents."""
@@ -530,11 +541,12 @@ class SchoolhubAPI(llm.API):
             # can offer all LLM APIs, gets nothing, so the data stays in Home Assistant.
             return llm.APIInstance(api=self, api_prompt="", llm_context=llm_context, tools=[])
         today = dt_util.now().date()
+        children = _children(self.hass)
         names = ", ".join(
             f"{child.name} (class {child.student.class_name})"
             if child.student.class_name
             else child.name
-            for child in _children(self.hass)
+            for child in children
         )
         return llm.APIInstance(
             api=self,
@@ -546,7 +558,10 @@ class SchoolhubAPI(llm.API):
                 tomorrow=(today + timedelta(days=1)).isoformat(),
             ),
             llm_context=llm_context,
-            tools=[HomeworkTool(), TimetableTool(), LunchTool(), NewsTool()],
+            tools=[
+                _with_children(tool, [child.name for child in children])
+                for tool in (HomeworkTool(), TimetableTool(), LunchTool(), NewsTool())
+            ],
         )
 
 
